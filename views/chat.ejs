@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="../stylesheets/chat.css">
+</head>
+<body>
+    <div id="back">
+        <div id="panel">
+            <div id="online">
+                <h3>Online Users</h3>
+                <hr>
+                <div id="onlinelist">
+                </div>
+            </div>
+            <div id="messagebar">
+                <div id="overlay">
+                    <div id="msgpanel">
+                    </div>
+                    <div id="form">
+                        <textarea name="msg" placeholder="Type your message here."></textarea>
+                        <input type="checkbox" name="" id="flag">
+                        <div id="btn">
+                            <i class="ri-send-plane-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.min.js" integrity="sha512-Jq1JnVXlkYQOYQpz31qIV/0l67d97J9I6sbILtfiSYX00Isr2zK7XDRmHW8d2iBTwNZfL7sHkHGT0EzLs90jdw==" crossorigin="anonymous"></script>
+    <script>
+        var socket=io();
+        var onlinelist=document.querySelector('#onlinelist')
+        var url=new URL(window.location.href);
+        var username=url.searchParams.get('username')
+        socket.emit('login',username);
+        socket.on('allusers',function(allusers){
+            onlinelist.innerHTML='';
+            for(var x in allusers) {
+                onlinelist.innerHTML +=`<div class="user">${allusers[x]}</div>`
+            }
+        })
+
+        var text=document.querySelector('textarea');
+        var flag=document.querySelector('#flag');
+        text.addEventListener('keypress',function(e){
+            if( e.charCode===13 && flag.checked){
+                e.preventDefault();
+                socket.emit('msg',text.value)
+                text.value='';
+            }
+        })
+        document.querySelector('#btn').addEventListener('click',function(){
+            socket.emit('msg',text.value);
+            text.value='';
+        })
+        socket.on('newmessage',function(data){
+            document.querySelector('#msgpanel').innerHTML +=`<div class="msg">${data.newms}</div>`
+        })
+    </script>
+</body>
+</html>
